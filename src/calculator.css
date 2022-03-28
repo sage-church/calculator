@@ -1,0 +1,14 @@
+#outline {
+    width: 20rem;
+    height: 29rem;
+    border: solid rgb(0, 0, 0) 1px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    background-color: gray;
+    box-shadow: 0 0 4px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+  }

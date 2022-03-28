@@ -1,13 +1,115 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+html {
+  height: 100%;
+  background-color: rgb(124, 187, 223);
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+  height: 100%;
+  margin: 0;
 }
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* #buttons {
+  position: relative;
+  display: flex;
+  width: 30rem;
+  flex-wrap: wrap;
+  user-select: none;
+}
+
+#buttons:after {
+  content: '';
+  background: black;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 80%;
+  width: 1px;
+}
+
+.number {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.7rem;
+  width: 6rem;
+  height: 5rem;
+  border-right: solid rgb(0, 0, 0) 1px;
+  border-bottom: solid rgb(0, 0, 0) 1px;
+  background-color: rgb(175, 175, 175);
+  color: rgb(0, 0, 0);
+  box-sizing: border-box;
+}
+
+.operator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.7rem;
+  width: 6rem;
+  height: 5rem;
+  border-right: solid rgb(0, 0, 0) 1px;
+  border-bottom: solid rgb(0, 0, 0) 1px;
+  background-color: rgb(134, 134, 134);
+  color: rgb(0, 0, 0);
+  box-sizing: border-box;
+}
+
+.number:hover {
+  position: relative;
+  z-index: 2;
+  background-color: rgba(109, 169, 224, 0.63);
+  cursor: pointer;
+  box-shadow: 0 0 7px rgb(22, 22, 22);
+}
+
+.number:active {
+  background-color: rgba(123, 191, 255, 0.63);
+}
+
+.operator:hover {
+  position: relative;
+  z-index: 2;
+  background-color: rgba(35, 100, 161, 0.63);
+  cursor: pointer;
+  box-shadow: 0 0 7px rgb(22, 22, 22);
+}
+
+.operator:active {
+  background-color: rgba(36, 126, 209, 0.63);
+}
+
+#equals {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.7rem;
+  width: 12rem;
+  height: 5rem;
+  border-right: solid rgb(0, 0, 0) 1px;
+  border-bottom: solid rgb(0, 0, 0) 1px;
+  border-left: solid rgb(0, 0, 0) 1px;
+  background-color: rgba(35, 100, 161, 0.63);
+  color: rgb(0, 0, 0);
+  box-sizing: border-box;
+  margin-left: auto;
+}
+
+#equals:hover {
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  background-color: rgba(36, 126, 209, 0.63);
+  box-shadow: 0 0 7px rgb(22, 22, 22);
+}
+
+#equals:active {
+  background-color: rgba(109, 169, 224, 0.63);
+} */
