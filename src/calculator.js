@@ -5,7 +5,7 @@ import React, {useState} from 'react';
 
 export default function Calculator (props) {
 
-    const [displayValue, setDisplayValue] = useState('')
+    const [displayValue, setDisplayValue] = useState(0)
 
     function handleInputChange (e) {
         const buttonValue = e.target.textContent;
@@ -15,26 +15,32 @@ export default function Calculator (props) {
             switch (buttonValue) {
                 case 'C':
                 case '+/-':
+                case '+':
                 case '=':
                 case '0':
                     break;
                 default:
-                    newDisplayValue = displayValue + buttonValue;
+                    newDisplayValue = buttonValue;
             }
         } else {
+            
             switch (buttonValue) {
                 case 'C':
-                    newDisplayValue = '';
+                    newDisplayValue = 0;
                     break;
                 case '+/-':
+                    if (!Number.isNaN(Number(displayValue))) {
+                        newDisplayValue = displayValue * -1
+                    } 
+                    break;
                 case '=':
+
                     break;
                 default:
                     newDisplayValue = displayValue + buttonValue;
             }
         }
         setDisplayValue(newDisplayValue);
-        
     }
 
     return (

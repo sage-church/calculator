@@ -11,6 +11,7 @@
     box-sizing: border-box;
     border: inset;
     text-align: end;
+    /* overflow-x: scroll; */
 }
 
 #screen:focus {
