@@ -10,7 +10,7 @@ function ButtonBox (props) {
         {key: 5, button: '7'},
         {key: 6, button: '8'},
         {key: 7, button: '9'},
-        {key: 8, button: 'x'},
+        {key: 8, button: '*'},
         {key: 9, button: '4'},
         {key: 10, button: '5'},
         {key: 11, button: '6'},
