@@ -7,12 +7,18 @@ export default function Calculator (props) {
 
     const [displayValue, setDisplayValue] = useState('')
 
-    
-
     function handleInputChange (e) {
         const buttonValue = e.target.textContent;
         let useButtonValue = true;
         let newDisplayValue = displayValue;
+        let lastDisplayValueChar = displayValue.slice(displayValue.length - 1);
+        let doMath = {
+            '^': (a, b) => {return (a ** b).toString()},
+            '/': (a, b) => {return (a / b).toString()},
+            '*': (a, b) => {return (a * b).toString()},
+            '+': (a, b) => {return (a + b).toString()},
+            '-': (a, b) => {return (a - b).toString()}
+        }
 
         function isButtonValueUsed (buttonValue) {
             switch(buttonValue) {
@@ -22,15 +28,15 @@ export default function Calculator (props) {
                 case '+':
                 case '-':
                 case '.':
+                case '=':
                     return false;
                 default:
                     return true;
             }
         }
 
-        if (!displayValue) {
+        if (!displayValue || displayValue === 'Invalid input') {
             switch (buttonValue) {
-                case 'C':
                 case '+/-':
                 case '^':
                 case '/':
@@ -38,11 +44,13 @@ export default function Calculator (props) {
                 case '+':
                 case '=':
                     break;
+                case 'C':
+                    newDisplayValue = '';
+                    break;
                 default:
                     newDisplayValue = buttonValue;
             }
         } else {
-            let lastDisplayValueChar = displayValue.slice(displayValue.length - 1);
 
             switch (lastDisplayValueChar) {
                 case '^':
@@ -61,14 +69,29 @@ export default function Calculator (props) {
                         break;
                     case '+/-':
                         if (!Number.isNaN(Number(displayValue))) {
-                            newDisplayValue = displayValue * -1
+                            newDisplayValue = (displayValue * -1).toString();
                         } 
                         break;
                     case '=':
+                        let i = 0;
+                        while (i < newDisplayValue.length) {
+                            if (newDisplayValue[i] === '^') {
+                                let result = doMath['^'](newDisplayValue[i - 1], newDisplayValue[i + 1]);
 
+                                newDisplayValue = newDisplayValue.substring(0, newDisplayValue[i - 1]) + 
+                                    result + newDisplayValue.substring(newDisplayValue[i + 2]);
+                            }
+                            i++;
+                        }
+                        console.log(newDisplayValue);
                         break;
                     default:
                         newDisplayValue = displayValue + buttonValue;
+                }
+            } else {
+                switch (buttonValue) {
+                    case '=':
+                        newDisplayValue = 'Invalid input';
                 }
             }
         }
