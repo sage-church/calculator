@@ -12,12 +12,16 @@ export default function Calculator (props) {
         let useButtonValue = true;
         let newDisplayValue = displayValue;
         let lastDisplayValueChar = displayValue.slice(displayValue.length - 1);
-        let doMath = {
-            '^': (a, b) => {return (a ** b).toString()},
-            '/': (a, b) => {return (a / b).toString()},
-            '*': (a, b) => {return (a * b).toString()},
-            '+': (a, b) => {return (a + b).toString()},
-            '-': (a, b) => {return (a - b).toString()}
+        // let doMath = {
+        //     '**': (a, b) => {return (a ** b).toString()},
+        //     '/': (a, b) => {return (a / b).toString()},
+        //     '*': (a, b) => {return (a * b).toString()},
+        //     '+': (a, b) => {return (a + b).toString()},
+        //     '-': (a, b) => {return (a - b).toString()}
+        // }
+
+        for (let i = 0; i < newDisplayValue.length; i++) {
+            newDisplayValue = newDisplayValue.replace('^', '**')
         }
 
         function isButtonValueUsed (buttonValue) {
@@ -73,17 +77,7 @@ export default function Calculator (props) {
                         } 
                         break;
                     case '=':
-                        let i = 0;
-                        while (i < newDisplayValue.length) {
-                            if (newDisplayValue[i] === '^') {
-                                let result = doMath['^'](newDisplayValue[i - 1], newDisplayValue[i + 1]);
-
-                                newDisplayValue = newDisplayValue.substring(0, newDisplayValue[i - 1]) + 
-                                    result + newDisplayValue.substring(newDisplayValue[i + 2]);
-                            }
-                            i++;
-                        }
-                        console.log(newDisplayValue);
+                        newDisplayValue = eval(newDisplayValue).toString();
                         break;
                     default:
                         newDisplayValue = displayValue + buttonValue;
@@ -94,6 +88,9 @@ export default function Calculator (props) {
                         newDisplayValue = 'Invalid input';
                 }
             }
+        }
+        for (let i = 0; i < newDisplayValue.length; i++) {
+            newDisplayValue = newDisplayValue.replace('**', '^')
         }
         setDisplayValue(newDisplayValue);
     }
