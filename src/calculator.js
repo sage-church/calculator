@@ -1,6 +1,7 @@
 // TODO: handle the entry of 0 correctly
-// TODO: commas are still added after decimal points; fix this
+// TODO: can currently enter two decimals in one number
 // TODO: handle large inputs and results
+// TODO: eval() can't handle equations like '-10**2', error says number preceding '**' must have parentheses
 
 import './calculator.css'
 import Screen from './screen';
@@ -11,32 +12,17 @@ export default function Calculator () {
 
     const [displayValue, setDisplayValue] = useState('');
     const [runningEquation, setRunningEquation] = useState('');
+    const [wasEqualsSignLastClick, setWasEqualsSignLastClick] = useState(false);
 
     function handleInputChange (e) {
 
         const buttonValue = e.target.textContent;
         let newDisplayValue = displayValue.replace(/,/g, ''),
             newRunningEquation = runningEquation,
-            lastCharOfEquation = runningEquation.slice(-1);
-
-        // Creates array containing a string of the numerical characters at the end of the running
-        // equation (will be null if last character in running equation is not a numerical character).
-        let numAtEndOfEquationArr = runningEquation.match(/[0-9]+$/);
+            lastCharOfEquation = runningEquation.slice(-1),
+            indexOfNumAtEndOfEquation = newRunningEquation.lastIndexOf(displayValue),
+            newWasEqualsSignLastClick = wasEqualsSignLastClick;      
         
-        // Convert the string of numerical characters in 'numAtEndOfEquationArr' to number type. 
-        // 'numAtEndOfEquation' is set to NaN if 'numAtEndOfEquationArr' === null to avoid passing
-        // null to the 'Number' method, which would return 0.
-        let numAtEndOfEquation;
-        if (numAtEndOfEquationArr === null) {
-            numAtEndOfEquation = NaN;
-        } else {
-            numAtEndOfEquation = Number(numAtEndOfEquationArr[0])
-        };
-
-        // console.log(displayValue);
-        let indexOfNumAtEndOfEquation = newRunningEquation.lastIndexOf(displayValue);
-        // console.log(indexOfNumAtEndOfEquation);
-
         // if there are currently no numbers displayed (or infinity is shown), run this switch
         if (!displayValue || displayValue === 'Invalid input' || displayValue === 'Infinity') {
             switch (buttonValue) {
@@ -55,33 +41,60 @@ export default function Calculator () {
                     newDisplayValue = buttonValue;
                     newRunningEquation = buttonValue;
             }
+        } else if (wasEqualsSignLastClick) {
+            switch (buttonValue) {
+                case '+/-':
+                    newRunningEquation = (newRunningEquation * -1).toString();
+                    newDisplayValue = (newDisplayValue * -1).toString();
+                    break;
+                case '^':
+                    newRunningEquation += '**';
+                    break;
+                case '/':
+                    newRunningEquation += '/';
+                    break;
+                case '*':
+                    newRunningEquation += '*';
+                    break;
+                case '+':
+                    newRunningEquation += '+';
+                    break;
+                case '-':
+                    newRunningEquation += '-';
+                    break;
+                case '=':
+                    break;
+                case 'C':
+                    newDisplayValue = '';
+                    newRunningEquation = '';
+                    break;
+                default:
+                    newDisplayValue = buttonValue;
+                    newRunningEquation = buttonValue;
+                    // console.log(wasEqualsSignLastClick);
+            }
         } else {
-            // if the last character of the running equation is NOT a numerical character, run this switch
-            if (!numAtEndOfEquation) {
+            // If the last character of the running equation is NOT an integer, run this switch. 
+            // Need to check for 0 since Number('0') would return 0 and be treated as false
+            if (!Number(lastCharOfEquation) && lastCharOfEquation !== '0') {
                 switch (buttonValue) {
                     case 'C':
                         newDisplayValue = '';
                         newRunningEquation = '';
                         break;
                     case '+/-':
-                        // TODO: write rules for when buttonValue is '.'
-                        if (lastCharOfEquation === '.') {
-                            if (newDisplayValue.slice(0, -1)) {
 
-                                // Using newDisplayValue to find index since newDisplayValue will include
-                                // any preceding '-' that indicates the '+/-' has previously been clicked on the
-                                // currently displayed number
-                                indexOfNumAtEndOfEquation = newRunningEquation.lastIndexOf(newDisplayValue);
+                        if (lastCharOfEquation === '.' && newDisplayValue.slice(0, -1)) {
+        
+                            // Using newDisplayValue to find index since newDisplayValue will include
+                            // any preceding '-' that indicates '+/-' has previously been clicked on the
+                            // currently displayed number
+                            indexOfNumAtEndOfEquation = newRunningEquation.lastIndexOf(newDisplayValue);
 
-                                newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) +
-                                    (newDisplayValue * -1) + '.';
+                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) +
+                                (newDisplayValue * -1) + '.';
 
-                                newDisplayValue = (newDisplayValue * -1) + '.';
-                            } else {
-                                // TODO: should multiplying by -1 be allowed when just '.' is present?
-                                
-                            }
-                            
+                            newDisplayValue = (newDisplayValue * -1) + '.'; 
                         } 
                         break;
                     case '^': 
@@ -164,15 +177,42 @@ export default function Calculator () {
                         newRunningEquation = eval(newRunningEquation).toString();
                         newDisplayValue = newRunningEquation;
                         break;
+                    case '0':
+                        if (lastCharOfEquation !== '0' || newDisplayValue.length !== 1) {
+                            newDisplayValue += buttonValue;
+                            newRunningEquation += buttonValue;
+                        }
+                        break;
                     default:
-                        newDisplayValue += buttonValue;
-                        newRunningEquation += buttonValue;
+                        if (lastCharOfEquation === '0' && newDisplayValue.length === 1) {
+                            newDisplayValue = buttonValue;
+                            newRunningEquation = buttonValue;
+                        } else {
+                            newDisplayValue += buttonValue;
+                            newRunningEquation += buttonValue;
+                        }
+                        
                 }
             }
         }
-        newDisplayValue = newDisplayValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+        let indexOfDecimal = newDisplayValue.indexOf('.')
+        if (indexOfDecimal === -1) {
+            newDisplayValue = newDisplayValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        } else {
+            newDisplayValue = newDisplayValue.slice(0, indexOfDecimal).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + 
+            newDisplayValue.slice(indexOfDecimal);
+        }
+
+        if (buttonValue === '=') {
+            newWasEqualsSignLastClick = true;
+        } else {
+            newWasEqualsSignLastClick = false;
+        } 
+        
         setDisplayValue(newDisplayValue);
         setRunningEquation(newRunningEquation);
+        setWasEqualsSignLastClick(newWasEqualsSignLastClick);
 
         console.log(newRunningEquation);
 
