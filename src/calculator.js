@@ -1,5 +1,3 @@
-// TODO: handle the entry of 0 correctly
-// TODO: can currently enter two decimals in one number
 // TODO: handle large inputs and results
 // TODO: eval() can't handle equations like '-10**2', error says number preceding '**' must have parentheses
 
@@ -98,6 +96,14 @@ export default function Calculator () {
                         } 
                         break;
                     case '^': 
+                    if (lastCharOfEquation === '.' && newDisplayValue.slice(0, -1)) {
+
+                        
+                        newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + '(' +
+                            newDisplayValue.slice(0, -1) + ')' + '**';
+                        newDisplayValue = newDisplayValue.slice(0, -1);
+                    }
+                        break;
                     case '/':
                     case '*':
                     case '+':
@@ -176,6 +182,12 @@ export default function Calculator () {
                     case '=':
                         newRunningEquation = eval(newRunningEquation).toString();
                         newDisplayValue = newRunningEquation;
+                        break;
+                    case '.':
+                        if (newDisplayValue.indexOf('.') === -1) {
+                            newDisplayValue += buttonValue;
+                            newRunningEquation += buttonValue;
+                        }
                         break;
                     case '0':
                         if (lastCharOfEquation !== '0' || newDisplayValue.length !== 1) {
