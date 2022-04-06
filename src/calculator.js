@@ -1,4 +1,5 @@
-// TODO: handle large inputs and results
+// TODO: Fix; currently pushing '^' when the displayed value is negative from pushing '+/-' doesn't work.
+// The program doesn't add '**' to the equation if the currently entered number is in parentheses
 
 import './calculator.css'
 import Screen from './screen';
@@ -17,7 +18,7 @@ export default function Calculator () {
         let newDisplayValue = displayValue.replace(/,/g, ''),
             newRunningEquation = runningEquation,
             lastCharOfEquation = runningEquation.slice(-1),
-            indexOfNumAtEndOfEquation = newRunningEquation.lastIndexOf(displayValue),
+            indexOfNumAtEndOfEquation = newRunningEquation.lastIndexOf(newDisplayValue),
             newWasEqualsSignLastClick = wasEqualsSignLastClick;      
         
         // if there are currently no numbers displayed (or infinity is shown), run this switch
@@ -85,7 +86,6 @@ export default function Calculator () {
                 default:
                     newDisplayValue = buttonValue;
                     newRunningEquation = buttonValue;
-                    // console.log(wasEqualsSignLastClick);
             }
         } else {
             // If the last character of the running equation is NOT an integer, run this switch. 
@@ -133,6 +133,8 @@ export default function Calculator () {
                                 newDisplayValue = '0'
                                 newRunningEquation = newRunningEquation.slice(0, -1) + '0' + buttonValue;
                             }
+                        } else if (lastCharOfEquation === ')'){
+                            newRunningEquation += buttonValue;
                         }
                         break;
                     case '.':
@@ -144,16 +146,21 @@ export default function Calculator () {
                         }
                         break;
                     case '=':
-                        if (lastCharOfEquation === '.') {
+                        // if (newDisplayValue !== '.'){
 
-                            newRunningEquation = newRunningEquation.slice(0, -1)
+                        //     newRunningEquation = newRunningEquation.slice(0, -1)
+                        //     newRunningEquation = eval(newRunningEquation).toString();
+
+                        //     if (newRunningEquation.length < 12) {
+                        //         newDisplayValue = newRunningEquation;
+                        //     } else {
+                        //         newDisplayValue = Number(newRunningEquation).toExponential(2).toString()
+                        //     }
+                        // }
+                        if (newDisplayValue === '.') {
+                            newRunningEquation = newRunningEquation.slice(0, -1) + '0';
                             newRunningEquation = eval(newRunningEquation).toString();
-
-                            if (newRunningEquation.length < 13) {
-                                newDisplayValue = newRunningEquation;
-                            } else {
-                                newDisplayValue = Number(newRunningEquation).toExponential(2).toString()
-                            }
+                            newDisplayValue = newRunningEquation;
                         } else {
                             newDisplayValue = 'Invalid input';
                             newRunningEquation = '';
@@ -180,7 +187,7 @@ export default function Calculator () {
                                 newRunningEquation = (newRunningEquation * -1).toString();
                             } else {
                                 newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + 
-                                    displayValue * -1;
+                                    '(' + newDisplayValue * -1 + ')';
                             }
                             newDisplayValue = (newDisplayValue * -1).toString();
                             
@@ -207,7 +214,12 @@ export default function Calculator () {
                         break;
                     case '=':
                         newRunningEquation = eval(newRunningEquation).toString();
-                        newDisplayValue = newRunningEquation;
+
+                        if (newRunningEquation.length < 12) {
+                            newDisplayValue = newRunningEquation;
+                        } else {
+                            newDisplayValue = Number(newRunningEquation).toExponential(2).toString()
+                        }
                         break;
                     case '.':
                         if (newDisplayValue.indexOf('.') === -1) {
