@@ -1,5 +1,4 @@
 // TODO: handle large inputs and results
-// TODO: eval() can't handle equations like '-10**2', error says number preceding '**' must have parentheses
 
 import './calculator.css'
 import Screen from './screen';
@@ -38,6 +37,23 @@ export default function Calculator () {
                 default:
                     newDisplayValue = buttonValue;
                     newRunningEquation = buttonValue;
+            }
+        } else if (newDisplayValue.indexOf('e') !== -1) {
+            switch(buttonValue) {
+                case '+/-':
+                case '^':
+                case '/':
+                case '*':
+                case '+':
+                case '-':
+                case '=':
+                    break;
+                case 'C':
+                    newDisplayValue = '';
+                    newRunningEquation = '';
+                    break;
+                default:
+                    newDisplayValue = newRunningEquation = buttonValue;
             }
         } else if (wasEqualsSignLastClick) {
             switch (buttonValue) {
@@ -129,10 +145,15 @@ export default function Calculator () {
                         break;
                     case '=':
                         if (lastCharOfEquation === '.') {
-                            newRunningEquation = newRunningEquation.slice(0, -1)
 
+                            newRunningEquation = newRunningEquation.slice(0, -1)
                             newRunningEquation = eval(newRunningEquation).toString();
-                            newDisplayValue = newRunningEquation;
+
+                            if (newRunningEquation.length < 13) {
+                                newDisplayValue = newRunningEquation;
+                            } else {
+                                newDisplayValue = Number(newRunningEquation).toExponential(2).toString()
+                            }
                         } else {
                             newDisplayValue = 'Invalid input';
                             newRunningEquation = '';
@@ -165,7 +186,12 @@ export default function Calculator () {
                             
                         break;
                     case '^': 
-                        newRunningEquation += '**'
+                        if (newDisplayValue[0] === '-') {
+                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + '('
+                                + newDisplayValue + ')' + '**';
+                        } else {
+                            newRunningEquation += '**'
+                        }
                         break;
                     case '/':
                         newRunningEquation += '/'
@@ -209,9 +235,10 @@ export default function Calculator () {
         }
 
         let indexOfDecimal = newDisplayValue.indexOf('.')
+
         if (indexOfDecimal === -1) {
             newDisplayValue = newDisplayValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        } else {
+        } else if (newDisplayValue.indexOf('e') === -1) {
             newDisplayValue = newDisplayValue.slice(0, indexOfDecimal).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + 
             newDisplayValue.slice(indexOfDecimal);
         }
