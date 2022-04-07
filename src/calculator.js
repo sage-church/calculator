@@ -1,5 +1,4 @@
-// TODO: Fix; currently pushing '^' when the displayed value is negative from pushing '+/-' doesn't work.
-// The program doesn't add '**' to the equation if the currently entered number is in parentheses
+// TODO: line 191, code doesn't do what is wanted
 
 import './calculator.css'
 import Screen from './screen';
@@ -105,20 +104,56 @@ export default function Calculator () {
                             // currently displayed number
                             indexOfNumAtEndOfEquation = newRunningEquation.lastIndexOf(newDisplayValue);
 
+                            // The following adds parentheses around a negative number in the running equation. This
+                            // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
+                            // negative symbols preceed '**'. Alternatively, it will show '2-(-3)**4'
                             newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) +
-                                (newDisplayValue * -1) + '.';
+                                '(' + (newDisplayValue * -1) + '.' + ')';
 
                             newDisplayValue = (newDisplayValue * -1) + '.'; 
-                        } 
+
+                        } else if (lastCharOfEquation === ')' && newDisplayValue.slice(-1) !== '.') {
+
+                            
+                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation - 1) +
+                                (newDisplayValue * -1)
+                            newDisplayValue = (newDisplayValue * -1).toString();
+
+                        } else if (lastCharOfEquation === ')') {
+
+                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation - 1) +
+                            (newDisplayValue * -1) + '.';
+                            newDisplayValue = (newDisplayValue * -1).toString() + '.';
+
+                        }
+
                         break;
                     case '^': 
-                    if (lastCharOfEquation === '.' && newDisplayValue.slice(0, -1)) {
+                        if (lastCharOfEquation === '.' && newDisplayValue.slice(0, -1)) {
 
-                        
-                        newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + '(' +
-                            newDisplayValue.slice(0, -1) + ')' + '**';
-                        newDisplayValue = newDisplayValue.slice(0, -1);
-                    }
+                            // The following adds parentheses around a negative number in the running equation. This
+                            // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
+                            // negative symbols preceed '**'. Alternatively, it will show '2-(-3)**4'
+                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + '(' +
+                                newDisplayValue.slice(0, -1) + ')' + '**';
+                            newDisplayValue = newDisplayValue.slice(0, -1);
+
+                        } else if (newDisplayValue === '.') {
+
+                            newDisplayValue = '0';
+                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + '0'
+                                + '**';
+
+                        } 
+                        else if (lastCharOfEquation === ')' && newDisplayValue.slice(-1) === '.') {
+
+                            newDisplayValue = newDisplayValue.slice(0, -1)
+                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation - 1) +
+                                '(' + newDisplayValue + ')' + '**'; 
+
+                        } else if (lastCharOfEquation === ')') {
+                            newRunningEquation += '**';
+                        }
                         break;
                     case '/':
                     case '*':
@@ -131,7 +166,8 @@ export default function Calculator () {
                                 newRunningEquation = newRunningEquation.slice(0, -1) + buttonValue;
                             } else {
                                 newDisplayValue = '0'
-                                newRunningEquation = newRunningEquation.slice(0, -1) + '0' + buttonValue;
+                                newRunningEquation = newRunningEquation.slice(0, -1) + newDisplayValue
+                                     + buttonValue;
                             }
                         } else if (lastCharOfEquation === ')'){
                             newRunningEquation += buttonValue;
@@ -140,27 +176,39 @@ export default function Calculator () {
                     case '.':
                         if (lastCharOfEquation === '.') {
                             return;
-                        } else {
+                        } else if (lastCharOfEquation === ')' && newDisplayValue.indexOf('.') === -1) {
+
+                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation -1) + 
+                                '(' + newDisplayValue + buttonValue + ')';
+                            newDisplayValue += buttonValue;
+
+                        } else if (lastCharOfEquation !== ')') {
                             newDisplayValue = buttonValue;
                             newRunningEquation += buttonValue;
                         }
                         break;
                     case '=':
-                        // if (newDisplayValue !== '.'){
-
-                        //     newRunningEquation = newRunningEquation.slice(0, -1)
-                        //     newRunningEquation = eval(newRunningEquation).toString();
-
-                        //     if (newRunningEquation.length < 12) {
-                        //         newDisplayValue = newRunningEquation;
-                        //     } else {
-                        //         newDisplayValue = Number(newRunningEquation).toExponential(2).toString()
-                        //     }
-                        // }
                         if (newDisplayValue === '.') {
-                            newRunningEquation = newRunningEquation.slice(0, -1) + '0';
+
+                            newRunningEquation = eval((newRunningEquation.slice(0, -1) + '0')).toString()
+
+                            if (newRunningEquation.length < 12) {
+
+                                newRunningEquation = newRunningEquation.slice(0, -1) + '0';
+                                newRunningEquation = eval(newRunningEquation).toString();
+                                newDisplayValue = newRunningEquation;
+                            }
+
+                        } else if (lastCharOfEquation === ')') {
+
                             newRunningEquation = eval(newRunningEquation).toString();
-                            newDisplayValue = newRunningEquation;
+
+                            if (newRunningEquation.length < 12) {
+                                newDisplayValue = newRunningEquation;
+                            } else {
+                                newDisplayValue = Number(newRunningEquation).toExponential(2).toString()
+                            }
+
                         } else {
                             newDisplayValue = 'Invalid input';
                             newRunningEquation = '';
@@ -170,6 +218,12 @@ export default function Calculator () {
                         if (lastCharOfEquation === '.') {
                             newDisplayValue += buttonValue;
                             newRunningEquation += buttonValue;
+                        } else if (lastCharOfEquation === ')') {
+
+                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation -1) + 
+                                '(' + newDisplayValue + buttonValue + ')'; 
+                            newDisplayValue += buttonValue;
+
                         } else {
                             newDisplayValue = buttonValue;
                             newRunningEquation += buttonValue;
@@ -186,6 +240,9 @@ export default function Calculator () {
                             if (indexOfNumAtEndOfEquation === 0) {
                                 newRunningEquation = (newRunningEquation * -1).toString();
                             } else {
+                            // The following adds parentheses around a negative number in the running equation. This
+                            // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
+                            // negative symbols preceed '**'. Alternatively, it will show '2-(-3)**4'
                                 newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + 
                                     '(' + newDisplayValue * -1 + ')';
                             }
@@ -193,6 +250,9 @@ export default function Calculator () {
                             
                         break;
                     case '^': 
+                    // The following adds parentheses around a negative number in the running equation. This
+                    // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
+                    // negative symbols preceed '**'. Alternatively, it will show '2-(-3)**4'
                         if (newDisplayValue[0] === '-') {
                             newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + '('
                                 + newDisplayValue + ')' + '**';
@@ -249,8 +309,11 @@ export default function Calculator () {
         let indexOfDecimal = newDisplayValue.indexOf('.')
 
         if (indexOfDecimal === -1) {
+
             newDisplayValue = newDisplayValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+
         } else if (newDisplayValue.indexOf('e') === -1) {
+
             newDisplayValue = newDisplayValue.slice(0, indexOfDecimal).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + 
             newDisplayValue.slice(indexOfDecimal);
         }
