@@ -1,4 +1,7 @@
-// TODO: decimals are sometimes not calculated correctly
+// TODO: Decimals are sometimes not calculated correctly. Change method of evaluation?
+// TODO: README
+// TODO: License
+// TODO: If answer is float with 8 digits before decimal, round
 
 import './calculator.css'
 import Screen from './screen';
@@ -341,7 +344,7 @@ export default function Calculator () {
         setRunningEquation(newRunningEquation);
         setWasEqualsSignLastClick(newWasEqualsSignLastClick);
 
-        console.log(newRunningEquation);
+        // console.log(newRunningEquation);
 
     }
 

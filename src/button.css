@@ -1,6 +1,8 @@
 .button {
-    width: 3.5rem;
+    width: 3.6rem;
     height: 3.5rem;
+    max-width: 120px;
+    max-height: 120px;
     background-color: rgb(11, 36, 51);
     border-radius: 5px;
     border: outset 1px;
@@ -10,6 +12,7 @@
     justify-content: center;
     align-items: center;
     font-size: 1.4rem;
+    font-size: clamp(5px, 1.4rem, 47px);
     user-select: none;
 }
 
@@ -25,4 +28,6 @@
 #equals {
     width: 7.5rem;
     height: 3.5rem;
+    max-width: 260px;
+    max-height: 120px;
 }

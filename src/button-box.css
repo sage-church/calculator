@@ -1,6 +1,9 @@
 #button-box {
-    height: 73%;
-    width: 98%;
+    height: 19.5rem;
+    width: 17.5rem;
+    max-width: 595px;
+    max-height: 663px;
+    margin: auto;
     box-sizing: border-box;
     display: flex;
     justify-content: space-evenly;
