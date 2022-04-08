@@ -1,4 +1,4 @@
-// TODO: line 191, code doesn't do what is wanted
+// TODO: decimals are sometimes not calculated correctly
 
 import './calculator.css'
 import Screen from './screen';
@@ -96,8 +96,9 @@ export default function Calculator () {
                         newRunningEquation = '';
                         break;
                     case '+/-':
-
-                        if (lastCharOfEquation === '.' && newDisplayValue.slice(0, -1)) {
+                        if (newDisplayValue === '0' || newDisplayValue === '0.') {
+                            return;
+                        } else if (lastCharOfEquation === '.' && newDisplayValue.slice(0, -1)) {
         
                             // Using newDisplayValue to find index since newDisplayValue will include
                             // any preceding '-' that indicates '+/-' has previously been clicked on the
@@ -188,17 +189,29 @@ export default function Calculator () {
                         }
                         break;
                     case '=':
+
                         if (newDisplayValue === '.') {
 
                             newRunningEquation = eval((newRunningEquation.slice(0, -1) + '0')).toString()
 
                             if (newRunningEquation.length < 12) {
-
-                                newRunningEquation = newRunningEquation.slice(0, -1) + '0';
-                                newRunningEquation = eval(newRunningEquation).toString();
                                 newDisplayValue = newRunningEquation;
+                            } else {
+                                newDisplayValue = Number(newRunningEquation).toExponential(2).toString();
                             }
 
+                        } else if (lastCharOfEquation === '.') {
+
+                            newRunningEquation = eval(
+                                newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + 
+                                    newDisplayValue.slice(0, -1)).toString();
+                                
+                            if (newRunningEquation.length < 12) {
+                                newDisplayValue = newRunningEquation;
+                            } else {
+                                newDisplayValue = Number(newRunningEquation).toExponential(2).toString();
+                            }
+                            
                         } else if (lastCharOfEquation === ')') {
 
                             newRunningEquation = eval(newRunningEquation).toString();
@@ -213,7 +226,7 @@ export default function Calculator () {
                             newDisplayValue = 'Invalid input';
                             newRunningEquation = '';
                         }
-                        break;
+                        break; 
                     default:
                         if (lastCharOfEquation === '.') {
                             newDisplayValue += buttonValue;
@@ -239,7 +252,7 @@ export default function Calculator () {
                     case '+/-':
                             if (indexOfNumAtEndOfEquation === 0) {
                                 newRunningEquation = (newRunningEquation * -1).toString();
-                            } else {
+                            } else if (newDisplayValue !== '0' && newDisplayValue !== '0.') {
                             // The following adds parentheses around a negative number in the running equation. This
                             // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
                             // negative symbols preceed '**'. Alternatively, it will show '2-(-3)**4'
@@ -294,9 +307,9 @@ export default function Calculator () {
                         }
                         break;
                     default:
-                        if (lastCharOfEquation === '0' && newDisplayValue.length === 1) {
+                        if (newDisplayValue === '0') {
                             newDisplayValue = buttonValue;
-                            newRunningEquation = buttonValue;
+                            newRunningEquation = newRunningEquation.slice(0, -1) + buttonValue;
                         } else {
                             newDisplayValue += buttonValue;
                             newRunningEquation += buttonValue;
