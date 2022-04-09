@@ -8,6 +8,18 @@ import Screen from './screen';
 import ButtonBox from './button-box';
 import React, {useState} from 'react';
 
+// const emptyString = '',
+//       plus = '+',
+//       minus = '-',
+//       multiply = '*',
+//       divide = '/',
+//       powerCarrot = '^',
+//       powerAsterisks = '**',
+//       equalsSign = '=',
+//       capitalC = 'C',
+//       multiplyNegativeOne = '+/-',
+//       decimal = '.';
+
 export default function Calculator () {
 
     const [displayValue, setDisplayValue] = useState('');
@@ -22,11 +34,10 @@ export default function Calculator () {
             lastCharOfEquation = runningEquation.slice(-1),
             indexOfNumAtEndOfEquation = newRunningEquation.lastIndexOf(newDisplayValue),
             newWasEqualsSignLastClick = wasEqualsSignLastClick,
-            indexOfE,
             indexOfDecimal;      
         
         // if there are currently no numbers displayed (or infinity is shown), run this switch
-        if (!displayValue || displayValue === 'Invalid input' || displayValue === 'Infinity') {
+        if (!displayValue || displayValue === 'Invalid input' || displayValue === '>1.79769e+308') {
             switch (buttonValue) {
                 case '+/-':
                 case '^':
@@ -55,7 +66,6 @@ export default function Calculator () {
                     break;
                 case 'C':
                     newDisplayValue = '';
-                    newRunningEquation = '';
                     break;
                 default:
                     newDisplayValue = newRunningEquation = buttonValue;
@@ -384,13 +394,18 @@ export default function Calculator () {
             }
         }
 
-        indexOfDecimal = newDisplayValue.indexOf('.')
+        let indexOfE = newDisplayValue.indexOf('e');
+        indexOfDecimal = newDisplayValue.indexOf('.');
 
-        if (indexOfDecimal === -1) {
+        if (newRunningEquation === 'Infinity') {
+
+            newDisplayValue = '>1.79769e+308'
+
+        } else if (indexOfDecimal === -1) {
 
             newDisplayValue = newDisplayValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 
-        } else if (newDisplayValue.indexOf('e') === -1) {
+        } else if (indexOfE === -1) {
 
             newDisplayValue = newDisplayValue.slice(0, indexOfDecimal).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + 
             newDisplayValue.slice(indexOfDecimal);
