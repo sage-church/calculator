@@ -1,4 +1,5 @@
-// TODO: create functions for repeated actions
+// TODO: add intermediate variables where applicable
+// TODO: Don't round floats if they fit on the screen. Currently '42.1234567' rounds, but fits
 // TODO: README
 // TODO: License
 
@@ -7,18 +8,6 @@ import './calculator.css'
 import Screen from './screen';
 import ButtonBox from './button-box';
 import React, {useState} from 'react';
-
-// const emptyString = '',
-//       plus = '+',
-//       minus = '-',
-//       multiply = '*',
-//       divide = '/',
-//       powerCarrot = '^',
-//       powerAsterisks = '**',
-//       equalsSign = '=',
-//       capitalC = 'C',
-//       multiplyNegativeOne = '+/-',
-//       decimal = '.';
 
 export default function Calculator () {
 
@@ -35,8 +24,41 @@ export default function Calculator () {
             indexOfNumAtEndOfEquation = newRunningEquation.lastIndexOf(newDisplayValue),
             newWasEqualsSignLastClick = wasEqualsSignLastClick,
             indexOfDecimal;      
+
+        function multiplyByNegativeOne (numberString) {
+          numberString = (numberString * -1).toString();
+          return numberString;
+        }
+
+        function removeLastCharacter (string) {
+            string = string.slice(0, -1);
+            return string;
+        }
+
+        function removeLastNumOfEquation (string) {
+            string = string.slice(0, indexOfNumAtEndOfEquation);
+            return string;
+        }
+
+        function removeLastParenthesizedNum (string) {
+            string = string.slice(0, indexOfNumAtEndOfEquation - 1);
+            return string;
+        }
+
+        function findIndexOfDecimal (string) {
+            let index = string.indexOf('.');
+            return index;
+        }
+
+        function roundToFourDecimals(numberString) {
+            let convertedToNumber = Number(numberString);
+            let rounded = convertedToNumber.toFixed(4);
+            let roundedString = rounded.toString();
+            return roundedString;
+        }
         
-        // if there are currently no numbers displayed (or infinity is shown), run this switch
+        // if there are currently no numbers displayed, last input was invalid, or last result was 
+        // higher than JS infinity), run this switch
         if (!displayValue || displayValue === 'Invalid input' || displayValue === '>1.79769e+308') {
             switch (buttonValue) {
                 case '+/-':
@@ -51,8 +73,7 @@ export default function Calculator () {
                     newDisplayValue = '';
                     break;
                 default:
-                    newDisplayValue = buttonValue;
-                    newRunningEquation = buttonValue;
+                    newDisplayValue = newRunningEquation = buttonValue;
             }
         } else if (newDisplayValue.indexOf('e') !== -1) {
             switch(buttonValue) {
@@ -73,8 +94,8 @@ export default function Calculator () {
         } else if (wasEqualsSignLastClick) {
             switch (buttonValue) {
                 case '+/-':
-                    newRunningEquation = (newRunningEquation * -1).toString();
-                    newDisplayValue = (newDisplayValue * -1).toString();
+                    newRunningEquation = multiplyByNegativeOne(newRunningEquation);
+                    newDisplayValue = multiplyByNegativeOne(newDisplayValue);
                     break;
                 case '^':
                     newRunningEquation += '**';
@@ -113,58 +134,60 @@ export default function Calculator () {
                     case '+/-':
                         if (newDisplayValue === '0' || newDisplayValue === '0.') {
                             return;
-                        } else if (lastCharOfEquation === '.' && newDisplayValue.slice(0, -1)) {
-        
-                            // Using newDisplayValue to find index since newDisplayValue will include
-                            // any preceding '-' that indicates '+/-' has previously been clicked on the
-                            // currently displayed number
-                            indexOfNumAtEndOfEquation = newRunningEquation.lastIndexOf(newDisplayValue);
+                        } else if (lastCharOfEquation === '.' && removeLastCharacter(newDisplayValue)) {
 
-                            // The following adds parentheses around a negative number in the running equation. This
-                            // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
-                            // negative symbols preceed '**'. Alternatively, it will show '2-(-3)**4'
-                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) +
-                                '(' + (newDisplayValue * -1) + '.' + ')';
+                            if (indexOfNumAtEndOfEquation === 0) {
 
-                            newDisplayValue = (newDisplayValue * -1) + '.'; 
+                                newRunningEquation = multiplyByNegativeOne(newDisplayValue) + '.';
+                                newDisplayValue = multiplyByNegativeOne(newDisplayValue) + '.';
+
+                            } else {
+                                // The following adds parentheses around a negative number in the running equation. This
+                                // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
+                                // negative symbols preceed '**'. Alternatively, it will show '2-(-3)**4'
+                                newRunningEquation = removeLastNumOfEquation(newRunningEquation) +
+                                    '(' + multiplyByNegativeOne(newDisplayValue) + '.' + ')';
+    
+                                newDisplayValue = multiplyByNegativeOne(newDisplayValue) + '.'; 
+                            }
 
                         } else if (lastCharOfEquation === ')' && newDisplayValue.slice(-1) !== '.') {
 
                             
-                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation - 1) +
-                                (newDisplayValue * -1)
-                            newDisplayValue = (newDisplayValue * -1).toString();
+                            newRunningEquation = removeLastParenthesizedNum(newRunningEquation) +
+                                multiplyByNegativeOne(newDisplayValue);
+                            newDisplayValue = multiplyByNegativeOne(newDisplayValue);
 
                         } else if (lastCharOfEquation === ')') {
 
-                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation - 1) +
-                            (newDisplayValue * -1) + '.';
-                            newDisplayValue = (newDisplayValue * -1).toString() + '.';
+                            newRunningEquation = removeLastParenthesizedNum(newRunningEquation) +
+                            multiplyByNegativeOne(newDisplayValue) + '.';
+                            newDisplayValue = multiplyByNegativeOne(newDisplayValue) + '.';
 
                         }
 
                         break;
                     case '^': 
-                        if (lastCharOfEquation === '.' && newDisplayValue.slice(0, -1)) {
+                        if (lastCharOfEquation === '.' && removeLastCharacter(newDisplayValue)) {
 
                             // The following adds parentheses around a negative number in the running equation. This
                             // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
                             // negative symbols preceed '**'. Alternatively, it will show '2-(-3)**4'
-                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + '(' +
-                                newDisplayValue.slice(0, -1) + ')' + '**';
-                            newDisplayValue = newDisplayValue.slice(0, -1);
+                            newRunningEquation = removeLastNumOfEquation(newRunningEquation) + '(' +
+                                removeLastCharacter(newDisplayValue) + ')' + '**';
+                            newDisplayValue = removeLastCharacter(newDisplayValue);
 
                         } else if (newDisplayValue === '.') {
 
                             newDisplayValue = '0';
-                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + '0'
+                            newRunningEquation = removeLastNumOfEquation(newRunningEquation) + '0'
                                 + '**';
 
                         } 
                         else if (lastCharOfEquation === ')' && newDisplayValue.slice(-1) === '.') {
 
-                            newDisplayValue = newDisplayValue.slice(0, -1)
-                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation - 1) +
+                            newDisplayValue = removeLastCharacter(newDisplayValue);
+                            newRunningEquation = removeLastParenthesizedNum(newRunningEquation) +
                                 '(' + newDisplayValue + ')' + '**'; 
 
                         } else if (lastCharOfEquation === ')') {
@@ -177,12 +200,12 @@ export default function Calculator () {
                     case '-':
                         if (lastCharOfEquation === '.') {
                             
-                            if (newDisplayValue.slice(0, -1)) {
-                                newDisplayValue = newDisplayValue.slice(0, -1);
-                                newRunningEquation = newRunningEquation.slice(0, -1) + buttonValue;
+                            if (removeLastCharacter(newDisplayValue)) {
+                                newDisplayValue = removeLastCharacter(newDisplayValue);
+                                newRunningEquation = removeLastCharacter(newRunningEquation) + buttonValue;
                             } else {
                                 newDisplayValue = '0'
-                                newRunningEquation = newRunningEquation.slice(0, -1) + newDisplayValue
+                                newRunningEquation = removeLastCharacter(newRunningEquation) + newDisplayValue
                                      + buttonValue;
                             }
                         } else if (lastCharOfEquation === ')'){
@@ -194,7 +217,7 @@ export default function Calculator () {
                             return;
                         } else if (lastCharOfEquation === ')' && newDisplayValue.indexOf('.') === -1) {
 
-                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation -1) + 
+                            newRunningEquation = removeLastParenthesizedNum(newRunningEquation) + 
                                 '(' + newDisplayValue + buttonValue + ')';
                             newDisplayValue += buttonValue;
 
@@ -207,20 +230,19 @@ export default function Calculator () {
 
                         if (newDisplayValue === '.') {
 
-                            newRunningEquation = eval((newRunningEquation.slice(0, -1) + '0')).toString();
-                            indexOfDecimal = newRunningEquation.indexOf('.');
+                            newRunningEquation = eval((removeLastCharacter(newRunningEquation) + 
+                                '0')).toString();
+                            indexOfDecimal = findIndexOfDecimal(newRunningEquation);
 
                             // If result of equation is float with 7 or less digits before decimal, round
                             // to 4 decimal places. This is done to avoid scientific notation on relatively
-                            // low numbers with large amounts of decimal places.
+                            // low numbers with a large amount of decimal places.
                             if (
                                 indexOfDecimal !== -1 && 
                                 newRunningEquation.slice(0, indexOfDecimal).length < 8
                             ) {
                                 
-                                newRunningEquation = Number(newRunningEquation);
-                                newRunningEquation = parseFloat(newRunningEquation.toFixed(4))
-                                newRunningEquation = newRunningEquation.toString();
+                                newRunningEquation = roundToFourDecimals(newRunningEquation);
                                 newDisplayValue = newRunningEquation;
 
                             // handle every scenario excluding the above case
@@ -233,21 +255,19 @@ export default function Calculator () {
                         } else if (lastCharOfEquation === '.') {
 
                             newRunningEquation = eval(
-                                newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + 
-                                    newDisplayValue.slice(0, -1)).toString();
-                            indexOfDecimal = newRunningEquation.indexOf('.');
+                                removeLastNumOfEquation(newRunningEquation) + 
+                                    removeLastCharacter(newDisplayValue)).toString();
+                            indexOfDecimal = findIndexOfDecimal(newRunningEquation);
 
                             // If result of equation is float with 7 or less digits before decimal, round
                             // to 4 decimal places. This is done to avoid scientific notation on relatively
-                            // low numbers with large amounts of decimal places.
+                            // low numbers with a large amount of decimal places.
                             if (
                                 indexOfDecimal !== -1 && 
                                 newRunningEquation.slice(0, indexOfDecimal).length < 8
                             ) {
                                 
-                                newRunningEquation = Number(newRunningEquation);
-                                newRunningEquation = parseFloat(newRunningEquation.toFixed(4))
-                                newRunningEquation = newRunningEquation.toString();
+                                newRunningEquation = roundToFourDecimals(newRunningEquation);
                                 newDisplayValue = newRunningEquation;
 
                             // handle every scenario excluding the above case
@@ -260,19 +280,17 @@ export default function Calculator () {
                         } else if (lastCharOfEquation === ')') {
 
                             newRunningEquation = eval(newRunningEquation).toString();
-                            indexOfDecimal = newRunningEquation.indexOf('.');
+                            indexOfDecimal = findIndexOfDecimal(newRunningEquation);
 
                             // If result of equation is float with 7 or less digits before decimal, round
                             // to 4 decimal places. This is done to avoid scientific notation on relatively
-                            // low numbers with large amounts of decimal places.
+                            // low numbers with a large amount of decimal places.
                             if (
                                 indexOfDecimal !== -1 && 
                                 newRunningEquation.slice(0, indexOfDecimal).length < 8
                             ) {
                                 
-                                newRunningEquation = Number(newRunningEquation);
-                                newRunningEquation = parseFloat(newRunningEquation.toFixed(4))
-                                newRunningEquation = newRunningEquation.toString();
+                                newRunningEquation = roundToFourDecimals(newRunningEquation);
                                 newDisplayValue = newRunningEquation;
 
                             // handle every scenario excluding the above case
@@ -293,7 +311,7 @@ export default function Calculator () {
                             newRunningEquation += buttonValue;
                         } else if (lastCharOfEquation === ')') {
 
-                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation -1) + 
+                            newRunningEquation = removeLastParenthesizedNum(newRunningEquation) + 
                                 '(' + newDisplayValue + buttonValue + ')'; 
                             newDisplayValue += buttonValue;
 
@@ -311,23 +329,24 @@ export default function Calculator () {
                         break;
                     case '+/-':
                             if (indexOfNumAtEndOfEquation === 0) {
-                                newRunningEquation = (newRunningEquation * -1).toString();
+                                newRunningEquation = multiplyByNegativeOne(newRunningEquation);
                             } else if (newDisplayValue !== '0' && newDisplayValue !== '0.') {
+
                             // The following adds parentheses around a negative number in the running equation. This
                             // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
                             // negative symbols preceed '**'. Alternatively, it will show '2-(-3)**4'
-                                newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + 
-                                    '(' + newDisplayValue * -1 + ')';
+                                newRunningEquation = removeLastNumOfEquation(newRunningEquation) + 
+                                    '(' + multiplyByNegativeOne(newDisplayValue) + ')';
                             }
-                            newDisplayValue = (newDisplayValue * -1).toString();
+                            newDisplayValue = multiplyByNegativeOne(newDisplayValue);
                             
                         break;
                     case '^': 
-                    // The following adds parentheses around a negative number in the running equation. This
-                    // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
-                    // negative symbols preceed '**'. Alternatively, it will show '2-(-3)**4'
+                        // The following adds parentheses around a negative number in the running equation. This
+                        // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
+                        // negative symbols preceed '**'. Alternatively, it will show '2-(-3)**4'
                         if (newDisplayValue[0] === '-') {
-                            newRunningEquation = newRunningEquation.slice(0, indexOfNumAtEndOfEquation) + '('
+                            newRunningEquation = removeLastNumOfEquation(newRunningEquation) + '('
                                 + newDisplayValue + ')' + '**';
                         } else {
                             newRunningEquation += '**'
@@ -347,19 +366,17 @@ export default function Calculator () {
                         break;
                     case '=':
                         newRunningEquation = eval(newRunningEquation).toString();
-                        indexOfDecimal = newRunningEquation.indexOf('.');
+                        indexOfDecimal = findIndexOfDecimal(newRunningEquation);
 
                         // If result of equation is float with 7 or less digits before decimal, round
                         // to 4 decimal places. This is done to avoid scientific notation on relatively
-                        // lower numbers with large amounts of decimal places.
+                        // low numbers with a large amount of decimal places.
                         if (
                             indexOfDecimal !== -1 && 
                             newRunningEquation.slice(0, indexOfDecimal).length < 8
                         ) {
                             
-                            newRunningEquation = Number(newRunningEquation);
-                            newRunningEquation = parseFloat(newRunningEquation.toFixed(4))
-                            newRunningEquation = newRunningEquation.toString();
+                            newRunningEquation = roundToFourDecimals(newRunningEquation);
                             newDisplayValue = newRunningEquation;
 
                         // handle every scenario excluding the above case
@@ -384,7 +401,7 @@ export default function Calculator () {
                     default:
                         if (newDisplayValue === '0') {
                             newDisplayValue = buttonValue;
-                            newRunningEquation = newRunningEquation.slice(0, -1) + buttonValue;
+                            newRunningEquation = removeLastCharacter(newRunningEquation) + buttonValue;
                         } else {
                             newDisplayValue += buttonValue;
                             newRunningEquation += buttonValue;
@@ -395,7 +412,7 @@ export default function Calculator () {
         }
 
         let indexOfE = newDisplayValue.indexOf('e');
-        indexOfDecimal = newDisplayValue.indexOf('.');
+        indexOfDecimal = findIndexOfDecimal(newDisplayValue);
 
         if (newRunningEquation === 'Infinity') {
 
@@ -421,7 +438,7 @@ export default function Calculator () {
         setRunningEquation(newRunningEquation);
         setWasEqualsSignLastClick(newWasEqualsSignLastClick);
 
-        // console.log(newRunningEquation);
+        console.log(newRunningEquation);
 
     }
 
