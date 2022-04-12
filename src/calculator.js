@@ -1,5 +1,5 @@
-// TODO: add intermediate variables where applicable
-// TODO: Don't round floats if they fit on the screen. Currently '42.1234567' rounds, but fits
+// TODO: '+/-' on long decimal reduces decimal points
+// todo: move result computing to function in different file and import
 // TODO: README
 // TODO: License
 
@@ -8,6 +8,7 @@ import './calculator.css'
 import Screen from './screen';
 import ButtonBox from './button-box';
 import React, {useState} from 'react';
+import handleResult from './result';
 
 export default function Calculator () {
 
@@ -50,11 +51,23 @@ export default function Calculator () {
             return index;
         }
 
-        function roundToFourDecimals(numberString) {
-            let convertedToNumber = Number(numberString);
-            let rounded = convertedToNumber.toFixed(4);
-            let roundedString = rounded.toString();
-            return roundedString;
+        function toScientificNotation (numberString) {
+            let result = Number(numberString).toExponential(7);
+            return result;
+        }
+
+        function roundResult (numberString, indexOfDecimal) {
+            let digitsBeforeDecimal = numberString.slice(0, indexOfDecimal);
+            let numOfDigitsBeforeDecimal = digitsBeforeDecimal.length;
+            let number = Number(numberString);
+
+            for (let i = 1, x = 10; i < 12; i++, x--) {
+                if (i === numOfDigitsBeforeDecimal) {
+                    let roundedNum = number.toFixed(x);
+                    let roundedString = roundedNum.toString();
+                    return roundedString;
+                }
+            }
         }
         
         // if there are currently no numbers displayed, last input was invalid, or last result was 
@@ -230,51 +243,47 @@ export default function Calculator () {
 
                         if (newDisplayValue === '.') {
 
-                            newRunningEquation = eval((removeLastCharacter(newRunningEquation) + 
-                                '0')).toString();
-                            indexOfDecimal = findIndexOfDecimal(newRunningEquation);
+                            let equationToEval = removeLastCharacter(newRunningEquation) + '0';
+                            let result = eval(equationToEval).toString();
+                            indexOfDecimal = findIndexOfDecimal(result);
 
-                            // If result of equation is float with 7 or less digits before decimal, round
-                            // to 4 decimal places. This is done to avoid scientific notation on relatively
-                            // low numbers with a large amount of decimal places.
-                            if (
-                                indexOfDecimal !== -1 && 
-                                newRunningEquation.slice(0, indexOfDecimal).length < 8
-                            ) {
-                                
-                                newRunningEquation = roundToFourDecimals(newRunningEquation);
-                                newDisplayValue = newRunningEquation;
+                            handleResult(result, indexOfDecimal, roundResult, toScientificNotation);
 
-                            // handle every scenario excluding the above case
-                            } else if (newRunningEquation.length < 12) {
-                                newDisplayValue = newRunningEquation;
-                            } else {
-                                newDisplayValue = Number(newRunningEquation).toExponential(7).toString();
-                            }
+                            newRunningEquation = newDisplayValue = result;
 
                         } else if (lastCharOfEquation === '.') {
 
-                            newRunningEquation = eval(
-                                removeLastNumOfEquation(newRunningEquation) + 
-                                    removeLastCharacter(newDisplayValue)).toString();
+                            let equationToEval = removeLastNumOfEquation(newRunningEquation) + 
+                                removeLastCharacter(newDisplayValue);
+                            newRunningEquation = eval(equationToEval).toString();
                             indexOfDecimal = findIndexOfDecimal(newRunningEquation);
 
-                            // If result of equation is float with 7 or less digits before decimal, round
-                            // to 4 decimal places. This is done to avoid scientific notation on relatively
-                            // low numbers with a large amount of decimal places.
-                            if (
-                                indexOfDecimal !== -1 && 
-                                newRunningEquation.slice(0, indexOfDecimal).length < 8
-                            ) {
-                                
-                                newRunningEquation = roundToFourDecimals(newRunningEquation);
+                            // if result doesn't have decimal and is under 12 characters, display plainly
+                            if (newRunningEquation.length < 12 && indexOfDecimal === -1) {
+
                                 newDisplayValue = newRunningEquation;
 
-                            // handle every scenario excluding the above case
-                            } else if (newRunningEquation.length < 12) {
+                            } else if (
+                                // if result has decimal and is under 13 characters, display plainly
+                                indexOfDecimal !== -1 && 
+                                newRunningEquation.length < 13
+                            ) {
+                                
                                 newDisplayValue = newRunningEquation;
+
+                            } else if (
+                                // if result has decimal and number of digits preceding decimal is less 
+                                // than 12, round based on number of digits preceding decimal
+                                indexOfDecimal !== -1 && 
+                                newRunningEquation.slice(0, indexOfDecimal).length < 12
+                            ) {
+
+                                newRunningEquation = roundResult(newRunningEquation, indexOfDecimal);
+                                newDisplayValue = newRunningEquation;
+
                             } else {
-                                newDisplayValue = Number(newRunningEquation).toExponential(7).toString();
+                                // handle every scenario excluding the above cases
+                                newDisplayValue = toScientificNotation(newRunningEquation).toString();
                             }
                             
                         } else if (lastCharOfEquation === ')') {
@@ -282,22 +291,32 @@ export default function Calculator () {
                             newRunningEquation = eval(newRunningEquation).toString();
                             indexOfDecimal = findIndexOfDecimal(newRunningEquation);
 
-                            // If result of equation is float with 7 or less digits before decimal, round
-                            // to 4 decimal places. This is done to avoid scientific notation on relatively
-                            // low numbers with a large amount of decimal places.
-                            if (
-                                indexOfDecimal !== -1 && 
-                                newRunningEquation.slice(0, indexOfDecimal).length < 8
-                            ) {
-                                
-                                newRunningEquation = roundToFourDecimals(newRunningEquation);
+                            // if result doesn't have decimal and is under 12 characters, display plainly
+                            if (newRunningEquation.length < 12 && indexOfDecimal === -1) {
+
                                 newDisplayValue = newRunningEquation;
 
-                            // handle every scenario excluding the above case
-                            } else if (newRunningEquation.length < 12) {
+                            } else if (
+                                // if result has decimal and is under 13 characters, display plainly
+                                indexOfDecimal !== -1 && 
+                                newRunningEquation.length < 13
+                            ) {
+
                                 newDisplayValue = newRunningEquation;
+
+                            } else if (
+                                // if result has decimal and number of digits preceding decimal is less 
+                                // than 12, round based on number of digits preceding decimal
+                                indexOfDecimal !== -1 && 
+                                newRunningEquation.slice(0, indexOfDecimal).length < 12
+                            ) {
+
+                                newRunningEquation = roundResult(newRunningEquation, indexOfDecimal);
+                                newDisplayValue = newRunningEquation;
+
                             } else {
-                                newDisplayValue = Number(newRunningEquation).toExponential(7).toString()
+                                // handle every scenario excluding the above cases
+                                newDisplayValue = toScientificNotation(newRunningEquation).toString();
                             }
 
                         } else {
@@ -368,22 +387,32 @@ export default function Calculator () {
                         newRunningEquation = eval(newRunningEquation).toString();
                         indexOfDecimal = findIndexOfDecimal(newRunningEquation);
 
-                        // If result of equation is float with 7 or less digits before decimal, round
-                        // to 4 decimal places. This is done to avoid scientific notation on relatively
-                        // low numbers with a large amount of decimal places.
-                        if (
-                            indexOfDecimal !== -1 && 
-                            newRunningEquation.slice(0, indexOfDecimal).length < 8
-                        ) {
-                            
-                            newRunningEquation = roundToFourDecimals(newRunningEquation);
+                       // if result doesn't have decimal and is under 12 characters, display plainly
+                       if (newRunningEquation.length < 12 && indexOfDecimal === -1) {
+
                             newDisplayValue = newRunningEquation;
 
-                        // handle every scenario excluding the above case
-                        } else if (newRunningEquation.length < 12) {
+                        } else if (
+                            // if result has decimal and is under 13 characters, display plainly
+                            indexOfDecimal !== -1 && 
+                            newRunningEquation.length < 13
+                        ) {
+
                             newDisplayValue = newRunningEquation;
+            
+                        } else if (
+                            // if result has decimal and number of digits preceding decimal is less 
+                            // than 12, round based on number of digits preceding decimal
+                            indexOfDecimal !== -1 && 
+                            newRunningEquation.slice(0, indexOfDecimal).length < 12
+                        ) {
+
+                            newRunningEquation = roundResult(newRunningEquation, indexOfDecimal);
+                            newDisplayValue = newRunningEquation;
+
                         } else {
-                            newDisplayValue = Number(newRunningEquation).toExponential(7).toString();
+                            // handle every scenario excluding the above cases
+                            newDisplayValue = toScientificNotation(newRunningEquation).toString();
                         }
                         break;
                     case '.':
@@ -416,16 +445,19 @@ export default function Calculator () {
 
         if (newRunningEquation === 'Infinity') {
 
-            newDisplayValue = '>1.79769e+308'
+            newDisplayValue = '>1.79769e+308';
 
         } else if (indexOfDecimal === -1) {
 
-            newDisplayValue = newDisplayValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            let resultWithCommas = newDisplayValue.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            newDisplayValue = resultWithCommas;
 
         } else if (indexOfE === -1) {
 
-            newDisplayValue = newDisplayValue.slice(0, indexOfDecimal).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + 
-            newDisplayValue.slice(indexOfDecimal);
+            let numsBeforeDecimal = newDisplayValue.slice(0, indexOfDecimal);
+            let numsBeforeDecimalWithCommas = numsBeforeDecimal.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            let resultWithCommas = numsBeforeDecimalWithCommas + newDisplayValue.slice(indexOfDecimal);
+            newDisplayValue = resultWithCommas;
         }
 
         if (buttonValue === '=') {
@@ -438,6 +470,11 @@ export default function Calculator () {
         setRunningEquation(newRunningEquation);
         setWasEqualsSignLastClick(newWasEqualsSignLastClick);
 
+        // function negOne (number) {
+        //     number = number * -1;
+        //     console.log(number);
+        //   }
+        // negOne(123456789123456789123);
         console.log(newRunningEquation);
 
     }
