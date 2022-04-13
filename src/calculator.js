@@ -1,5 +1,5 @@
 // TODO: '+/-' on long decimal reduces decimal points
-// todo: move result computing to function in different file and import
+// todo: make screen slightly wider
 // TODO: README
 // TODO: License
 
@@ -247,77 +247,29 @@ export default function Calculator () {
                             let result = eval(equationToEval).toString();
                             indexOfDecimal = findIndexOfDecimal(result);
 
-                            handleResult(result, indexOfDecimal, roundResult, toScientificNotation);
-
-                            newRunningEquation = newDisplayValue = result;
+                            newRunningEquation = newDisplayValue = handleResult (
+                                result, indexOfDecimal, roundResult, toScientificNotation
+                            );
 
                         } else if (lastCharOfEquation === '.') {
 
                             let equationToEval = removeLastNumOfEquation(newRunningEquation) + 
                                 removeLastCharacter(newDisplayValue);
-                            newRunningEquation = eval(equationToEval).toString();
-                            indexOfDecimal = findIndexOfDecimal(newRunningEquation);
-
-                            // if result doesn't have decimal and is under 12 characters, display plainly
-                            if (newRunningEquation.length < 12 && indexOfDecimal === -1) {
-
-                                newDisplayValue = newRunningEquation;
-
-                            } else if (
-                                // if result has decimal and is under 13 characters, display plainly
-                                indexOfDecimal !== -1 && 
-                                newRunningEquation.length < 13
-                            ) {
-                                
-                                newDisplayValue = newRunningEquation;
-
-                            } else if (
-                                // if result has decimal and number of digits preceding decimal is less 
-                                // than 12, round based on number of digits preceding decimal
-                                indexOfDecimal !== -1 && 
-                                newRunningEquation.slice(0, indexOfDecimal).length < 12
-                            ) {
-
-                                newRunningEquation = roundResult(newRunningEquation, indexOfDecimal);
-                                newDisplayValue = newRunningEquation;
-
-                            } else {
-                                // handle every scenario excluding the above cases
-                                newDisplayValue = toScientificNotation(newRunningEquation).toString();
-                            }
+                            let result = eval(equationToEval).toString();
+                            indexOfDecimal = findIndexOfDecimal(result);
+    
+                            newRunningEquation = newDisplayValue = handleResult (
+                                result, indexOfDecimal, roundResult, toScientificNotation
+                            );
                             
                         } else if (lastCharOfEquation === ')') {
 
-                            newRunningEquation = eval(newRunningEquation).toString();
-                            indexOfDecimal = findIndexOfDecimal(newRunningEquation);
+                            let result = eval(newRunningEquation).toString();
+                            indexOfDecimal = findIndexOfDecimal(result);
 
-                            // if result doesn't have decimal and is under 12 characters, display plainly
-                            if (newRunningEquation.length < 12 && indexOfDecimal === -1) {
-
-                                newDisplayValue = newRunningEquation;
-
-                            } else if (
-                                // if result has decimal and is under 13 characters, display plainly
-                                indexOfDecimal !== -1 && 
-                                newRunningEquation.length < 13
-                            ) {
-
-                                newDisplayValue = newRunningEquation;
-
-                            } else if (
-                                // if result has decimal and number of digits preceding decimal is less 
-                                // than 12, round based on number of digits preceding decimal
-                                indexOfDecimal !== -1 && 
-                                newRunningEquation.slice(0, indexOfDecimal).length < 12
-                            ) {
-
-                                newRunningEquation = roundResult(newRunningEquation, indexOfDecimal);
-                                newDisplayValue = newRunningEquation;
-
-                            } else {
-                                // handle every scenario excluding the above cases
-                                newDisplayValue = toScientificNotation(newRunningEquation).toString();
-                            }
+                            newRunningEquation = newDisplayValue = handleResult (
+                                result, indexOfDecimal, roundResult, toScientificNotation
+                            );
 
                         } else {
                             newDisplayValue = 'Invalid input';
@@ -384,36 +336,13 @@ export default function Calculator () {
                         newRunningEquation += '-'
                         break;
                     case '=':
-                        newRunningEquation = eval(newRunningEquation).toString();
-                        indexOfDecimal = findIndexOfDecimal(newRunningEquation);
+                        let result = eval(newRunningEquation).toString();
+                        indexOfDecimal = findIndexOfDecimal(result);
 
-                       // if result doesn't have decimal and is under 12 characters, display plainly
-                       if (newRunningEquation.length < 12 && indexOfDecimal === -1) {
+                        newRunningEquation = newDisplayValue = handleResult (
+                            result, indexOfDecimal, roundResult, toScientificNotation
+                        );
 
-                            newDisplayValue = newRunningEquation;
-
-                        } else if (
-                            // if result has decimal and is under 13 characters, display plainly
-                            indexOfDecimal !== -1 && 
-                            newRunningEquation.length < 13
-                        ) {
-
-                            newDisplayValue = newRunningEquation;
-            
-                        } else if (
-                            // if result has decimal and number of digits preceding decimal is less 
-                            // than 12, round based on number of digits preceding decimal
-                            indexOfDecimal !== -1 && 
-                            newRunningEquation.slice(0, indexOfDecimal).length < 12
-                        ) {
-
-                            newRunningEquation = roundResult(newRunningEquation, indexOfDecimal);
-                            newDisplayValue = newRunningEquation;
-
-                        } else {
-                            // handle every scenario excluding the above cases
-                            newDisplayValue = toScientificNotation(newRunningEquation).toString();
-                        }
                         break;
                     case '.':
                         if (newDisplayValue.indexOf('.') === -1) {
@@ -470,16 +399,9 @@ export default function Calculator () {
         setRunningEquation(newRunningEquation);
         setWasEqualsSignLastClick(newWasEqualsSignLastClick);
 
-        // function negOne (number) {
-        //     number = number * -1;
-        //     console.log(number);
-        //   }
-        // negOne(123456789123456789123);
         console.log(newRunningEquation);
 
     }
-
-    
 
     return (
         <div id='outline'>
