@@ -21,7 +21,7 @@ export default function Calculator () {
         const buttonValue = e.target.textContent,
               capitalC = 'C',
               plusMinus = '+/-',
-              powerCarrot = '^',
+              powerCaret = '^',
               forwardSlash = '/',
               asterisk = '*',
               plus = '+',
@@ -30,7 +30,8 @@ export default function Calculator () {
               equals = '=',
               powerAsterisks = '**',
               openingParenthesis = '(',
-              closingParenthesis = ')';
+              closingParenthesis = ')',
+              zeroStr = '0';
 
         let newDisplayValue = displayValue.replace(/,/g, emptyString),
             newRunningEquation = runningEquation,
@@ -88,7 +89,7 @@ export default function Calculator () {
         if (!displayValue || displayValue === 'Invalid input' || displayValue === '>1.79769e+308') {
             switch (buttonValue) {
                 case plusMinus:
-                case powerCarrot:
+                case powerCaret:
                 case forwardSlash:
                 case asterisk:
                 case plus:
@@ -104,7 +105,7 @@ export default function Calculator () {
         } else if (newDisplayValue.indexOf('e') !== -1) {
             switch(buttonValue) {
                 case plusMinus:
-                case powerCarrot:
+                case powerCaret:
                 case forwardSlash:
                 case asterisk:
                 case plus:
@@ -123,7 +124,7 @@ export default function Calculator () {
                     newRunningEquation = multiplyByNegativeOne(newRunningEquation);
                     newDisplayValue = multiplyByNegativeOne(newDisplayValue);
                     break;
-                case powerCarrot:
+                case powerCaret:
                     newRunningEquation += powerAsterisks;
                     break;
                 case forwardSlash:
@@ -150,15 +151,15 @@ export default function Calculator () {
             }
         } else {
             // If the last character of the running equation is NOT an integer, run this switch. 
-            // Need to check for 0 since Number('0') would return 0 and be treated as false
-            if (!Number(lastCharOfEquation) && lastCharOfEquation !== '0') {
+            // Need to check for 0 since Number(0) would return 0 and be treated as false
+            if (!Number(lastCharOfEquation) && lastCharOfEquation !== zeroStr) {
                 switch (buttonValue) {
                     case capitalC:
                         newDisplayValue = emptyString;
                         newRunningEquation = emptyString;
                         break;
                     case plusMinus:
-                        if (newDisplayValue === '0' || newDisplayValue === '0.') {
+                        if (newDisplayValue === zeroStr || newDisplayValue === '0.') {
                             return;
                         } else if (lastCharOfEquation === decimal && removeLastCharacter(newDisplayValue)) {
 
@@ -190,7 +191,7 @@ export default function Calculator () {
                         }
 
                         break;
-                    case powerCarrot: 
+                    case powerCaret: 
                         if (lastCharOfEquation === decimal && removeLastCharacter(newDisplayValue)) {
 
                             // The following adds parentheses around a negative number in the running equation. This
@@ -203,8 +204,8 @@ export default function Calculator () {
 
                         } else if (newDisplayValue === decimal) {
 
-                            newDisplayValue = '0';
-                            newRunningEquation = removeLastNumOfEquation(newRunningEquation) + '0'
+                            newDisplayValue = zeroStr;
+                            newRunningEquation = removeLastNumOfEquation(newRunningEquation) + zeroStr
                                 + powerAsterisks;
 
                         } 
@@ -231,7 +232,7 @@ export default function Calculator () {
                                 newDisplayValue = removeLastCharacter(newDisplayValue);
                                 newRunningEquation = removeLastCharacter(newRunningEquation) + buttonValue;
                             } else {
-                                newDisplayValue = '0'
+                                newDisplayValue = zeroStr
                                 newRunningEquation = removeLastCharacter(newRunningEquation) + newDisplayValue
                                      + buttonValue;
                             }
@@ -260,7 +261,7 @@ export default function Calculator () {
 
                         if (newDisplayValue === decimal) {
 
-                            let equationToEval = removeLastCharacter(newRunningEquation) + '0';
+                            let equationToEval = removeLastCharacter(newRunningEquation) + zeroStr;
                             let result = eval(equationToEval).toString();
                             indexOfDecimal = findIndexOfDecimal(result);
 
@@ -270,7 +271,7 @@ export default function Calculator () {
 
                             if (eval(newRunningEquation) === 0) {
 
-                                newDisplayValue = newRunningEquation = '0';
+                                newDisplayValue = newRunningEquation = zeroStr;
                     
                             }
 
@@ -287,7 +288,7 @@ export default function Calculator () {
 
                             if (eval(newRunningEquation) === 0) {
 
-                                newDisplayValue = newRunningEquation = '0';
+                                newDisplayValue = newRunningEquation = zeroStr;
                     
                             }
                             
@@ -302,7 +303,7 @@ export default function Calculator () {
 
                             if (eval(newRunningEquation) === 0) {
 
-                                newDisplayValue = newRunningEquation = '0';
+                                newDisplayValue = newRunningEquation = zeroStr;
                     
                             }
 
@@ -337,7 +338,7 @@ export default function Calculator () {
                         newRunningEquation = emptyString;
                         break;
                     case plusMinus:
-                            if (newDisplayValue !== '0' && newDisplayValue !== '0.') {
+                            if (newDisplayValue !== zeroStr && newDisplayValue !== '0.') {
 
                             // The following adds parentheses around a negative number in the running equation. This
                             // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
@@ -348,7 +349,7 @@ export default function Calculator () {
                             }
                             newDisplayValue = multiplyByNegativeOne(newDisplayValue);
                         break;
-                    case powerCarrot: 
+                    case powerCaret: 
                         // The following adds parentheses around a negative number in the running equation. This
                         // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
                         // negative symbols preceed powerAsterisks. Alternatively, it will show '2-(-3)**4'
@@ -381,7 +382,7 @@ export default function Calculator () {
 
                         if (eval(newRunningEquation) === 0) {
 
-                            newDisplayValue = newRunningEquation = '0';
+                            newDisplayValue = newRunningEquation = zeroStr;
                 
                         }
 
@@ -392,10 +393,10 @@ export default function Calculator () {
                             newRunningEquation += buttonValue;
                         }
                         break;
-                    case '0':
+                    case zeroStr:
                         // don't allow 17 digit long display values
                         if (
-                            (newDisplayValue !== '0' || newDisplayValue.length !== 1) && 
+                            (newDisplayValue !== zeroStr || newDisplayValue.length !== 1) && 
                             newDisplayValue.length < 16
                         ) {
                             newDisplayValue += buttonValue;
@@ -403,7 +404,7 @@ export default function Calculator () {
                         }
                         break;
                     default:
-                        if (newDisplayValue === '0') {
+                        if (newDisplayValue === zeroStr) {
                             newDisplayValue = buttonValue;
                             newRunningEquation = removeLastCharacter(newRunningEquation) + buttonValue;
                         } else if (newDisplayValue.length < 16) {
@@ -421,6 +422,10 @@ export default function Calculator () {
         if (newRunningEquation === 'Infinity') {
 
             newDisplayValue = '>1.79769e+308';
+
+        } else if (newRunningEquation === 'NaN') {
+
+            newDisplayValue = 'Invalid input'
 
         } else if (indexOfE !== -1 && digitsBeforeE.length > 9) {
 
