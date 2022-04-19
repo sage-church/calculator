@@ -1,6 +1,6 @@
 // TODO: README
 // TODO: License
-// todo: can't do equations like (-243)**.2
+// todo: add new equals functionality to situations where a number isn't the last character
 
 
 import './calculator.css'
@@ -79,9 +79,18 @@ export default function Calculator () {
                 if (i === numOfDigitsBeforeDecimal) {
                     let roundedNum = number.toFixed(x);
                     let roundedString = roundedNum.toString();
-                    return roundedString;
+                    let functionBody = 'return ' + roundedString;
+                    let finalResult = new Function(functionBody)().toString();
+                    return finalResult;
                 }
             }
+        }
+
+        function changeToLocaleString (numberString) {
+            let localeString = numberString.toLocaleString('fullwide', { 
+                useGrouping: true, maximumSignificantDigits:21
+            });
+            return localeString;
         }
         
         // if there are currently no numbers displayed, last input was invalid, or last result was 
@@ -121,8 +130,14 @@ export default function Calculator () {
         } else if (wasEqualsSignLastClick) {
             switch (buttonValue) {
                 case plusMinus:
-                    newRunningEquation = multiplyByNegativeOne(newRunningEquation);
-                    newDisplayValue = multiplyByNegativeOne(newDisplayValue);
+                    if (newDisplayValue[0] === minus) {
+                        newRunningEquation = multiplyByNegativeOne(newDisplayValue);
+                        newDisplayValue = multiplyByNegativeOne(newDisplayValue);
+                    } else {
+                        newRunningEquation = openingParenthesis + 
+                            multiplyByNegativeOne(newDisplayValue) + closingParenthesis;
+                        newDisplayValue = multiplyByNegativeOne(newDisplayValue);
+                    }
                     break;
                 case powerCaret:
                     newRunningEquation += powerAsterisks;
@@ -161,16 +176,19 @@ export default function Calculator () {
                     case plusMinus:
                         if (newDisplayValue === zeroStr || newDisplayValue === '0.') {
                             return;
-                        } else if (lastCharOfEquation === decimal && removeLastCharacter(newDisplayValue)) {
+                        } else if (
+                            lastCharOfEquation === decimal && 
+                            removeLastCharacter(newDisplayValue)
+                        ) {
+                            // The following adds parentheses around a negative number in the running 
+                            // equation. This prevents situation like '2--3**4' occurring. A negative
+                            // number must be wrapped in parentheses for '**' to be used, and two
+                            // negative symbols cannot be side by side. '2-(-3)**4 will be result.
+                            newRunningEquation = removeLastNumOfEquation(newRunningEquation) +
+                                openingParenthesis + multiplyByNegativeOne(newDisplayValue) + 
+                                decimal + closingParenthesis;
 
-                                // The following adds parentheses around a negative number in the running equation. This
-                                // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
-                                // negative symbols preceed powerAsterisks. Alternatively, it will show '2-(-3)**4'
-                                newRunningEquation = removeLastNumOfEquation(newRunningEquation) +
-                                    openingParenthesis + multiplyByNegativeOne(newDisplayValue) + 
-                                    decimal + closingParenthesis;
-    
-                                newDisplayValue = multiplyByNegativeOne(newDisplayValue) + decimal; 
+                            newDisplayValue = multiplyByNegativeOne(newDisplayValue) + decimal; 
                             
 
                         } else if (
@@ -194,9 +212,10 @@ export default function Calculator () {
                     case powerCaret: 
                         if (lastCharOfEquation === decimal && removeLastCharacter(newDisplayValue)) {
 
-                            // The following adds parentheses around a negative number in the running equation. This
-                            // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
-                            // negative symbols preceed powerAsterisks. Alternatively, it will show '2-(-3)**4'
+                            // The following adds parentheses around a negative number in the running 
+                            // equation. This prevents situation like '2--3**4' occurring. A negative
+                            // number must be wrapped in parentheses for '**' to be used, and two
+                            // negative symbols cannot be side by side. '2-(-3)**4 will be result.
                             newRunningEquation = removeLastNumOfEquation(newRunningEquation) + 
                                 openingParenthesis + removeLastCharacter(newDisplayValue) + 
                                 closingParenthesis + powerAsterisks;
@@ -261,8 +280,9 @@ export default function Calculator () {
 
                         if (newDisplayValue === decimal) {
 
-                            let equationToEval = removeLastCharacter(newRunningEquation) + zeroStr;
-                            let result = eval(equationToEval).toString();
+                            let resultFunctionBody = 'return ' + 
+                                removeLastCharacter(newRunningEquation) + zeroStr;
+                            let result = new Function(resultFunctionBody)().toString();
                             indexOfDecimal = findIndexOfDecimal(result);
 
                             newRunningEquation = newDisplayValue = handleResult (
@@ -277,9 +297,9 @@ export default function Calculator () {
 
                         } else if (lastCharOfEquation === decimal) {
 
-                            let equationToEval = removeLastNumOfEquation(newRunningEquation) + 
-                                removeLastCharacter(newDisplayValue);
-                            let result = eval(equationToEval).toString();
+                            let resultFunctionBody = 'return ' +
+                                removeLastCharacter(newRunningEquation);
+                            let result = new Function(resultFunctionBody)().toString();
                             indexOfDecimal = findIndexOfDecimal(result);
     
                             newRunningEquation = newDisplayValue = handleResult (
@@ -294,7 +314,8 @@ export default function Calculator () {
                             
                         } else if (lastCharOfEquation === closingParenthesis) {
 
-                            let result = eval(newRunningEquation).toString();
+                            let resultFunctionBody = 'return ' + newRunningEquation;
+                            let result = new Function(resultFunctionBody)().toString();
                             indexOfDecimal = findIndexOfDecimal(result);
 
                             newRunningEquation = newDisplayValue = handleResult (
@@ -338,22 +359,26 @@ export default function Calculator () {
                         newRunningEquation = emptyString;
                         break;
                     case plusMinus:
-                            if (newDisplayValue !== zeroStr && newDisplayValue !== '0.') {
+                        let functionBody = 'return ' + newDisplayValue;
 
-                            // The following adds parentheses around a negative number in the running equation. This
-                            // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
-                            // negative symbols preceed powerAsterisks. Alternatively, it will show '2-(-3)**4'
-                                newRunningEquation = removeLastNumOfEquation(newRunningEquation) + 
-                                    openingParenthesis + multiplyByNegativeOne(newDisplayValue) + 
-                                    closingParenthesis;
-                            }
+                        if (new Function(functionBody)() !== 0) {
+                        // The following adds parentheses around a negative number in the running 
+                        // equation. This prevents situation like '2--3**4' occurring. A negative
+                        // number must be wrapped in parentheses for '**' to be used, and two
+                        // negative symbols cannot be side by side. '2-(-3)**4 will be result.
+                            newRunningEquation = removeLastNumOfEquation(newRunningEquation) + 
+                                openingParenthesis + multiplyByNegativeOne(newDisplayValue) + 
+                                closingParenthesis;
                             newDisplayValue = multiplyByNegativeOne(newDisplayValue);
+                        }
                         break;
                     case powerCaret: 
-                        // The following adds parentheses around a negative number in the running equation. This
-                        // prevents situation like '2--3**4' occurring. eval() cannot compute when two 
-                        // negative symbols preceed powerAsterisks. Alternatively, it will show '2-(-3)**4'
+                        
                         if (newDisplayValue[0] === minus) {
+                            // The following adds parentheses around a negative number in the running 
+                            // equation. This prevents situation like '2--3**4' occurring. A negative
+                            // number must be wrapped in parentheses for '**' to be used, and two
+                            // negative symbols cannot be side by side. '2-(-3)**4 will be result.
                             newRunningEquation = removeLastNumOfEquation(newRunningEquation) + 
                                 openingParenthesis + newDisplayValue + closingParenthesis + powerAsterisks;
                         } else {
@@ -373,14 +398,16 @@ export default function Calculator () {
                         newRunningEquation += minus
                         break;
                     case equals:
-                        let result = eval(newRunningEquation).toString();
-                        indexOfDecimal = findIndexOfDecimal(result);
+                        let resultFunctionBody = 'return ' + newRunningEquation;
+                        let result = new Function(resultFunctionBody)();
+                        let localeString = changeToLocaleString(result);
+
+                        indexOfDecimal = findIndexOfDecimal(localeString);    
 
                         newRunningEquation = newDisplayValue = handleResult (
-                            result, indexOfDecimal, roundResult, toScientificNotation
+                            localeString, indexOfDecimal, roundResult, toScientificNotation
                         );
-
-                        if (eval(newRunningEquation) === 0) {
+                        if (newRunningEquation === 0) {
 
                             newDisplayValue = newRunningEquation = zeroStr;
                 
@@ -450,6 +477,10 @@ export default function Calculator () {
         } else {
             newWasEqualsSignLastClick = false;
         } 
+
+        if (newWasEqualsSignLastClick && newRunningEquation[0] === '-') {
+            newRunningEquation = openingParenthesis + newRunningEquation + closingParenthesis;
+        }
         
         setDisplayValue(newDisplayValue);
         setRunningEquation(newRunningEquation);
