@@ -1,6 +1,5 @@
 // TODO: README
 // TODO: License
-// todo: add new equals functionality to situations where a number isn't the last character
 
 
 import './calculator.css'
@@ -41,7 +40,7 @@ export default function Calculator () {
             indexOfDecimal;      
 
         function multiplyByNegativeOne (numberString) {
-          numberString = (numberString * -1).toString();
+          numberString = changeToLocaleString((numberString * -1));
           return numberString;
         }
 
@@ -86,8 +85,8 @@ export default function Calculator () {
             }
         }
 
-        function changeToLocaleString (numberString) {
-            let localeString = numberString.toLocaleString('fullwide', { 
+        function changeToLocaleString (number) {
+            let localeString = number.toLocaleString('fullwide', { 
                 useGrouping: true, maximumSignificantDigits:21
             });
             return localeString;
@@ -131,11 +130,12 @@ export default function Calculator () {
             switch (buttonValue) {
                 case plusMinus:
                     if (newDisplayValue[0] === minus) {
-                        newRunningEquation = multiplyByNegativeOne(newDisplayValue);
+                        newRunningEquation = multiplyByNegativeOne(newDisplayValue).replace(/,/g, emptyString);
                         newDisplayValue = multiplyByNegativeOne(newDisplayValue);
                     } else {
                         newRunningEquation = openingParenthesis + 
-                            multiplyByNegativeOne(newDisplayValue) + closingParenthesis;
+                            multiplyByNegativeOne(newDisplayValue).replace(/,/g, emptyString) + 
+                            closingParenthesis;
                         newDisplayValue = multiplyByNegativeOne(newDisplayValue);
                     }
                     break;
@@ -185,7 +185,8 @@ export default function Calculator () {
                             // number must be wrapped in parentheses for '**' to be used, and two
                             // negative symbols cannot be side by side. '2-(-3)**4 will be result.
                             newRunningEquation = removeLastNumOfEquation(newRunningEquation) +
-                                openingParenthesis + multiplyByNegativeOne(newDisplayValue) + 
+                                openingParenthesis + 
+                                multiplyByNegativeOne(newDisplayValue).replace(/,/g, emptyString) + 
                                 decimal + closingParenthesis;
 
                             newDisplayValue = multiplyByNegativeOne(newDisplayValue) + decimal; 
@@ -197,13 +198,14 @@ export default function Calculator () {
                         ) {
 
                             newRunningEquation = removeLastParenthesizedNum(newRunningEquation) +
-                                multiplyByNegativeOne(newDisplayValue);
+                                multiplyByNegativeOne(newDisplayValue).replace(/,/g, emptyString);
                             newDisplayValue = multiplyByNegativeOne(newDisplayValue);
 
                         } else if (lastCharOfEquation === closingParenthesis) {
 
                             newRunningEquation = removeLastParenthesizedNum(newRunningEquation) +
-                                multiplyByNegativeOne(newDisplayValue) + decimal;
+                                multiplyByNegativeOne(newDisplayValue).replace(/,/g, emptyString) + 
+                                decimal;
                             newDisplayValue = multiplyByNegativeOne(newDisplayValue) + decimal;
 
                         }
@@ -280,16 +282,17 @@ export default function Calculator () {
 
                         if (newDisplayValue === decimal) {
 
-                            let resultFunctionBody = 'return ' + 
+                            let functionBody = 'return ' + 
                                 removeLastCharacter(newRunningEquation) + zeroStr;
-                            let result = new Function(resultFunctionBody)().toString();
-                            indexOfDecimal = findIndexOfDecimal(result);
+                            let result = new Function(functionBody)();
+                            let localeString = changeToLocaleString(result).replace(/,/g, emptyString);
+
+                            indexOfDecimal = findIndexOfDecimal(localeString);    
 
                             newRunningEquation = newDisplayValue = handleResult (
-                                result, indexOfDecimal, roundResult, toScientificNotation
+                                localeString, indexOfDecimal, roundResult, toScientificNotation
                             );
-
-                            if (eval(newRunningEquation) === 0) {
+                            if (newRunningEquation === 0) {
 
                                 newDisplayValue = newRunningEquation = zeroStr;
                     
@@ -297,32 +300,34 @@ export default function Calculator () {
 
                         } else if (lastCharOfEquation === decimal) {
 
-                            let resultFunctionBody = 'return ' +
+                            let functionBody = 'return ' +
                                 removeLastCharacter(newRunningEquation);
-                            let result = new Function(resultFunctionBody)().toString();
-                            indexOfDecimal = findIndexOfDecimal(result);
+                                let result = new Function(functionBody)();
+                                let localeString = changeToLocaleString(result).replace(/,/g, emptyString);
     
-                            newRunningEquation = newDisplayValue = handleResult (
-                                result, indexOfDecimal, roundResult, toScientificNotation
-                            );
-
-                            if (eval(newRunningEquation) === 0) {
-
-                                newDisplayValue = newRunningEquation = zeroStr;
-                    
-                            }
+                                indexOfDecimal = findIndexOfDecimal(localeString);    
+    
+                                newRunningEquation = newDisplayValue = handleResult (
+                                    localeString, indexOfDecimal, roundResult, toScientificNotation
+                                );
+                                if (newRunningEquation === 0) {
+    
+                                    newDisplayValue = newRunningEquation = zeroStr;
+                        
+                                }
                             
                         } else if (lastCharOfEquation === closingParenthesis) {
 
-                            let resultFunctionBody = 'return ' + newRunningEquation;
-                            let result = new Function(resultFunctionBody)().toString();
-                            indexOfDecimal = findIndexOfDecimal(result);
+                            let functionBody = 'return ' + newRunningEquation;
+                            let result = new Function(functionBody)();
+                            let localeString = changeToLocaleString(result).replace(/,/g, emptyString);
+
+                            indexOfDecimal = findIndexOfDecimal(localeString);    
 
                             newRunningEquation = newDisplayValue = handleResult (
-                                result, indexOfDecimal, roundResult, toScientificNotation
+                                localeString, indexOfDecimal, roundResult, toScientificNotation
                             );
-
-                            if (eval(newRunningEquation) === 0) {
+                            if (newRunningEquation === 0) {
 
                                 newDisplayValue = newRunningEquation = zeroStr;
                     
@@ -359,18 +364,17 @@ export default function Calculator () {
                         newRunningEquation = emptyString;
                         break;
                     case plusMinus:
-                        let functionBody = 'return ' + newDisplayValue;
-
-                        if (new Function(functionBody)() !== 0) {
-                        // The following adds parentheses around a negative number in the running 
-                        // equation. This prevents situation like '2--3**4' occurring. A negative
-                        // number must be wrapped in parentheses for '**' to be used, and two
-                        // negative symbols cannot be side by side. '2-(-3)**4 will be result.
-                            newRunningEquation = removeLastNumOfEquation(newRunningEquation) + 
-                                openingParenthesis + multiplyByNegativeOne(newDisplayValue) + 
-                                closingParenthesis;
-                            newDisplayValue = multiplyByNegativeOne(newDisplayValue);
-                        }
+                            if (newDisplayValue != 0) {
+                            // The following adds parentheses around a negative number in the running 
+                            // equation. This prevents situation like '2--3**4' occurring. A negative
+                            // number must be wrapped in parentheses for '**' to be used, and two
+                            // negative symbols cannot be side by side. '2-(-3)**4 will be result.
+                                newRunningEquation = removeLastNumOfEquation(newRunningEquation) + 
+                                    openingParenthesis + 
+                                    multiplyByNegativeOne(newDisplayValue).replace(/,/g, emptyString) + 
+                                    closingParenthesis;
+                                newDisplayValue = multiplyByNegativeOne(newDisplayValue);
+                            }
                         break;
                     case powerCaret: 
                         
@@ -398,19 +402,21 @@ export default function Calculator () {
                         newRunningEquation += minus
                         break;
                     case equals:
-                        let resultFunctionBody = 'return ' + newRunningEquation;
-                        let result = new Function(resultFunctionBody)();
-                        let localeString = changeToLocaleString(result);
-
-                        indexOfDecimal = findIndexOfDecimal(localeString);    
-
-                        newRunningEquation = newDisplayValue = handleResult (
-                            localeString, indexOfDecimal, roundResult, toScientificNotation
-                        );
-                        if (newRunningEquation === 0) {
-
-                            newDisplayValue = newRunningEquation = zeroStr;
-                
+                        {
+                            let functionBody = 'return ' + newRunningEquation;
+                            let result = new Function(functionBody)();
+                            let localeString = changeToLocaleString(result).replace(/,/g, emptyString);
+    
+                            indexOfDecimal = findIndexOfDecimal(localeString);    
+    
+                            newRunningEquation = newDisplayValue = handleResult (
+                                localeString, indexOfDecimal, roundResult, toScientificNotation
+                            );
+                            if (newRunningEquation === 0) {
+    
+                                newDisplayValue = newRunningEquation = zeroStr;
+                    
+                            }
                         }
 
                         break;
@@ -485,9 +491,6 @@ export default function Calculator () {
         setDisplayValue(newDisplayValue);
         setRunningEquation(newRunningEquation);
         setWasEqualsSignLastClick(newWasEqualsSignLastClick);
-
-        console.log(newRunningEquation);
-
     }
 
     return (
