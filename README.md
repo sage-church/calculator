@@ -2,7 +2,7 @@
 
 ### PREVIEW
 
-![Screenshot from 2022-04-22 15-44-45](https://user-images.githubusercontent.com/38874409/164791056-a791cbae-b969-45cb-b1b1-d8a7a31f4c3b.png)
+![Screenshot from 2022-04-22 15-49-33](https://user-images.githubusercontent.com/38874409/164791574-e46729f1-8aae-491d-8220-83328833b627.png)
 
 ## SUMMARY
 
