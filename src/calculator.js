@@ -1,6 +1,4 @@
 // TODO: README
-// TODO: License
-
 
 import './calculator.css'
 import Screen from './screen';

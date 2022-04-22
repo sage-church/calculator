@@ -1,4 +1,21 @@
+# SUMMARY
 
+'Calculator' is a browser-based program that acts as a mathematical calculator. Once the program is up and running, the user can click numbers and operators to build and execute the desired equation as would be expected with a calculator. 
+
+Calculator's interface is responsive to the font size selected in the browser settings. The program utilizes React Hooks to update both the displayed value and the equation to be evaluated.
+
+# BUILT WITH
+
+    - HTML
+    - CSS
+    - Javascript
+    - React
+
+# SET UP
+
+## Download and run program locally
+
+Once the project files are downloaded, the instructions below under the heading 'Getting Started with Create React App' provided by 'reactjs.org' are applicable to getting the application running. The 'npm start' command will be the easiest way to fire up the program in the browser.
 
 # Getting Started with Create React App
 
@@ -70,3 +87,29 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+# React Copyright and Permissions Notice
+
+Copyright (c) 2013-present, Facebook, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## LICENSE
+
+Distributed under the MIT License. See the LICENSE file for more information.
